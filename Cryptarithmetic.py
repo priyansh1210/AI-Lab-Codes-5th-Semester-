@@ -1,42 +1,29 @@
-from itertools import permutations
-import re
-
-def solve_cryptarithmetic(puzzle):
-    # Extract words and operator
-    match = re.match(r'([A-Z+ ]+)=([A-Z]+)', puzzle.replace(' ', ''))
-    if not match:
-        print("Invalid format. Use format like 'SEND + MORE = MONEY'")
+import itertools
+def solve_crypto(word1, word2, result):
+    letters = set(word1) | set(word2) | set(result)
+    if len(letters) > 10:
+        print("❌ Invalid puzzle: More than 10 unique letters.")
         return
-
-    left_expr, result = match.groups()
-    words = re.findall(r'[A-Z]+', left_expr) + [result]
-    unique_letters = sorted(set(''.join(words)))
-
-    if len(unique_letters) > 10:
-        print("Too many unique letters (max 10).")
-        return
-
-    for perm in permutations(range(10), len(unique_letters)):
-        letter_map = dict(zip(unique_letters, perm))
-        if any(letter_map[word[0]] == 0 for word in words):  # No leading zero
+    sorted_letters = tuple(letters)
+    digits = range(10)
+    for perm in itertools.permutations(digits, len(sorted_letters)):
+        mapping = dict(zip(sorted_letters, perm))
+        if mapping[word1[0]] == 0 or mapping[word2[0]] == 0 or mapping[result[0]] == 0:
             continue
-
-        def word_value(word):
-            return int(''.join(str(letter_map[c]) for c in word))
-
-        left_sum = sum(word_value(w) for w in re.findall(r'[A-Z]+', left_expr))
-        right_val = word_value(result)
-
-        if left_sum == right_val:
-            print("\nSolution found:")
-            for k, v in letter_map.items():
-                print(f"{k} = {v}")
-            print(f"{left_expr} = {result}")
-            print(f"{left_sum} = {right_val}")
+        num1 = int("".join(str(mapping[c]) for c in word1))
+        num2 = int("".join(str(mapping[c]) for c in word2))
+        num_res = int("".join(str(mapping[c]) for c in result))
+        if num1 + num2 == num_res:
+            print("\n✅ Solution found!")
+            print(f"  {word1}: {num1}")
+            print(f"+ {word2}: {num2}")
+            print(f"= {result}: {num_res}")
+            print(f"\nMapping: {mapping}")
             return
-
-    print("No solution found.")
-
-
-puzzle = input("Enter cryptarithmetic puzzle (e.g., SEND + MORE = MONEY): ").upper()
-solve_cryptarithmetic(puzzle)
+    print("❌ No solution found.")
+if __name__ == "__main__":
+    print("🔢 Cryptarithmetic Puzzle Solver")
+    w1 = input("Enter first word: ").strip().upper()
+    w2 = input("Enter second word: ").strip().upper()
+    res = input("Enter result word: ").strip().upper()
+    solve_crypto(w1, w2, res)
